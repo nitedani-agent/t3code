@@ -3835,9 +3835,9 @@ const streamedProjectionCases = Effect.fn("streamedProjectionCases")(function* (
     output: "1 passed",
     updatedAt: later,
   } satisfies OrchestrationV2TurnItem;
+  // The run attempt id is indexed, so the stable update keeps it.
   const providerTurnStable = {
     ...providerTurn,
-    runAttemptId: RunAttemptId.make(`attempt:${suffix}`),
     status: "completed",
     completedAt: later,
   } satisfies OrchestrationV2ProviderTurn;
@@ -3970,12 +3970,13 @@ it.effect("streamed projection updates write only the pages whose contents chang
       }
       return pages;
     }).pipe(Effect.provide(ProjectionStore.layer.pipe(Layer.provideMerge(persistence))));
-    // One page for the projection row, and two for the thread's activity time: its row and index entry.
+    // One page for the projection row, and three for the thread's activity time: its row and the
+    // entries of the two indexes that read it.
     assert.deepStrictEqual(pages, {
-      "turn-item.updated": 3,
-      "subagent.updated": 3,
-      "provider-thread.updated": 3,
-      "provider-turn.updated": 3,
+      "turn-item.updated": 4,
+      "subagent.updated": 4,
+      "provider-thread.updated": 4,
+      "provider-turn.updated": 4,
     });
   }).pipe(Effect.scoped, Effect.provide(NodeServices.layer)),
 );
